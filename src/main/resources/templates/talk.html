@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head th:replace="_fragments :: head(~{::title})">
+    <meta charset="UTF-8">
+    <title>说说</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.css">
+    <link rel="stylesheet" href="../static/css/me.css">
+</head>
+<body>
+<!--导航-->
+<nav th:replace="_fragments :: menu(5)" class="ui inverted attached segment m-padded-tb-mini">
+    <div class="ui container">
+        <div class="ui inverted secondary stackable menu">
+            <h2 class="ui teal header item">Blog</h2>
+            <a href="#" class="m-item item m-mobile-hide"><i class="home icon"></i>首页</a>
+            <a href="#" class="m-item item m-mobile-hide"><i class="idea icon"></i>分类</a>
+            <a href="#" class="m-item item m-mobile-hide"><i class="tags icon"></i>标签</a>
+            <a href="#" class="m-item item m-mobile-hide"><i class="clone icon"></i>归档</a>
+            <a href="#" class="m-item item m-mobile-hide"><i class="info icon"></i>关于我</a>
+            <a href="#" class="m-item item m-mobile-hide"><i class="info icon"></i>说说</a>
+            <div class="right m-item item m-mobile-hide">
+                <div class="ui icon inverted transparent input">
+                    <input type="text" placeholder="Search....">
+                    <i class="search link icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="#" class="ui menu toogle black icon  button m-right-top m-mobile-show">
+        <i class="sidebar icon"></i>
+    </a>
+</nav>
+
+
+<div class="m-container-small m-padded-tb-big">
+
+    <div class="ui container">
+        <div class="ui top attached padded segment">
+            <div class="ui middle aligned two column grid">
+                <div class="column">
+                    <h3 class="ui teal header">说说</h3>
+                </div>
+                <div class="right aligned column">
+                    共 <h2 class="ui orange header m-inline-block m-text-thin" th:text="${talks.size()}"> 114 </h2> 条说说
+                </div>
+            </div>
+        </div>
+        <!--header-->
+
+        <div class="ui top attached teal segment">
+            <div class="ui padded vertical segment m-padded-tb-large">
+<!--                <div class="ui middle aligned mobile reversed stackable grid" >-->
+
+                    <div class="ui large feed" th:each="talk,talkStar:${talks}">
+                        <div class="event" >
+                            <div class="label">
+                                <img src="https://s1.328888.xyz/2022/05/05/hKQrR.jpg" th:src="@{ ${talk.user.avatar} }">
+                            </div>
+                            <div class="content">
+                                <div class="summary">
+                                    <a class="user" th:text="${talk.user.nickname}">
+                                        Elliot Fu
+                                    </a>
+                                    <div class="date"  th:text="${#dates.format(talk.updateTime,'yyyy-MM-dd HH:mm:ss')}">
+                                        1 Hour Ago
+                                    </div>
+                                </div>
+                                <div class="extra text" th:text="${talk.content}">
+                                    Have you seen what's going on in Israel? Can you believe it.
+                                </div>
+                                <div class="meta">
+                                    <a class="like">
+                                        <i class="like icon"></i>
+                                        <span class="likecount" id="likecount" th:classappend="${talkStar.index}">4</span> Likes
+                                    </a>
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="ui horizontal hidden divider">
+                        </div>
+                    </div>
+
+<!--                </div>-->
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+
+<br><br><br><br>
+<!--底部footer-->
+<footer th:replace="_fragments :: footer" class="ui inverted vertical segment m-padded-tb-massive"></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/semantic-ui/2.2.4/semantic.min.js"></script>
+<script>
+    $(".menu.toogle").click(function () {
+        $(".m-item").toggleClass("m-mobile-hide");
+    });
+    $('.like').click(function (e) {
+        var count=$('#likecount').text();
+        $("#likecount").text(++count);
+        e.stopPropagation();
+    })
+</script>
+
+</body>
+</html>

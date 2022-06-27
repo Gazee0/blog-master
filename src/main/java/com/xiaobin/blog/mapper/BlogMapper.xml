@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaobin.blog.mapper.BlogMapper">
+
+
+  <!--  id属性 ，resultMap标签的标识。
+  type属性 ，返回值的全限定类名，或类型别名。-->
+  <resultMap id="blog" type="com.xiaobin.blog.pojo.Blog">
+    <!--property是实体类的属性名称，column是表的列名    -->
+<!--      id是主键-->
+    <id property="id" column="id"/>
+    <result property="title" column="title"/>
+    <result property="content" column="content"/>
+    <result property="firstPicture" column="first_picture"/>
+    <result property="flag" column="flag"/>
+    <result property="views" column="views"/>
+    <result property="appreciation" column="appreciation"/>
+    <result property="shareStatement" column="share_statement"/>
+    <result property="commentabled" column="commentabled"/>
+    <result property="published" column="published"/>
+    <result property="recommend" column="recommend"/>
+    <result property="createTime" column="create_time"/>
+    <result property="updateTime" column="update_time"/>
+    <result property="typeId" column="type_id"/>
+    <result property="userId" column="user_id"/>
+    <result property="tagIds" column="tag_ids"/>
+    <result property="description" column="description"/>
+
+    <association property="type" javaType="com.xiaobin.blog.pojo.Type">
+      <id property="id" column="typeid"/>
+      <result property="name" column="typename"/>
+    </association>
+    <association property="user" javaType="com.xiaobin.blog.pojo.User">
+      <id property="id" column="uid"/>
+      <result property="nickname" column="nickname"/>
+      <result property="username" column="username"/>
+      <result property="email" column="email"/>
+      <result property="avatar" column="avatar"/>
+    </association>
+    <collection property="tags" ofType="com.xiaobin.blog.pojo.Tag">
+      <id property="id" column="tagid"/>
+      <result property="name" column="tagname"/>
+    </collection>
+  </resultMap>
+
+
+    <select id="getDetailedBlog" resultMap="blog">  /*博客详情*/
+    select b.id, b.first_picture, b.flag, b.title, b.content, b.views,
+           b.update_time,b.commentabled, b.share_statement, b.appreciation,b.recommend,
+           u.nickname, u.avatar,
+           tag.id tagid, tag.name tagname
+    from t_blog b, t_user u, t_tag tag, t_blog_tags tb
+    where b.user_id = u.id and tb.blog_id = b.id and tb.tag_id = tag.id and  b.id = #{id}
+    </select>
+
+    <select id="searchAllBlog" parameterType="com.xiaobin.blog.pojo.Blog" resultMap="blog">
+        select b.id, b.title, b.update_time, b.recommend, b.type_id, b.published,
+                t.id typeid, t.name typename
+        from t_blog b, t_type t
+        <where>
+            <if test="1 == 1">
+                b.type_id = t.id    /*博客类型id=类型id*/
+            </if>
+            <if test="typeId != null">
+                and b.type_id = #{typeId}       /*根据博客类型查询*/
+            </if>
+<!--            <if test="recommend != null">-->
+<!--                and b.recommend = #{recommend}   /*根据博客推荐查询*/-->
+<!--            </if>-->
+            <if test="title != null">
+                and b.title like '%${title}%'   /*根据博客title模糊查询*/
+            </if>
+        </where>
+    </select>
+
+  <!--useGeneratedKeys="true"；使用自增主键获取主键值策略
+       keyProperty；指定对应的主键属性，也就是mybatis获取到主键值以后，将这个值封装给javaBean的哪个属性
+   -->
+  <insert id="saveBlog" parameterType="com.xiaobin.blog.pojo.Blog" useGeneratedKeys="true" keyProperty="id">
+    insert into t_blog (title, content, first_picture, flag,
+                        views, appreciation, share_statement, commentabled,published,
+                        recommend, create_time, update_time, type_id, tag_ids, user_id, description)
+    values (#{title}, #{content}, #{firstPicture}, #{flag}, #{views}, #{appreciation},
+            #{shareStatement}, #{commentabled}, #{published}, #{recommend}, #{createTime},
+            #{updateTime}, #{typeId}, #{tagIds}, #{userId}, #{description});
+  </insert>
+
+<!--    展示后端管理需要的数据-->
+  <select id="listBlog" resultMap="blog">
+        select b.id, b.title, b.update_time, b.recommend, b.type_id, b.published,
+               t.id typeid, t.name typename
+        from t_blog b, t_type t
+        where b.type_id = t.id
+        order by b.update_time desc
+        /*博客类型id=类型id*/
+  </select>
+
+    <select id="getBlog" resultMap="blog"> /*后台展示博客*/
+    select b.id, b.title, b.update_time, b.recommend,b.content,b.flag,b.tag_ids, b.type_id,b.appreciation, b.published,b.description,b.share_statement,b.commentabled,b.recommend,b.views,b.first_picture,
+           t.id typeid, t.name typename
+    from t_blog b, t_type t
+    where b.id = #{id};
+    </select>
+
+    <!--    展示首页index的博客数据-->
+    <select id="listIndexBlog" resultMap="blog"> /*博客类型id=类型id*/
+    select b.id, b.title, b.first_picture, b.views, b.update_time, b.description,
+           t.name typename, t.id typeid,
+           u.nickname, u.avatar
+    from t_blog b, t_type t, t_user u
+    where b.type_id = t.id and  u.id = b.user_id and b.published=1
+    order by b.update_time desc
+    </select>
+
+
+<!--    通过Type的id查询blog的个数-->
+    <select id="getByTypeId" resultMap="blog">
+        select b.id, b.title, b.first_picture, b.views, b.update_time, b.description,
+               t.name typename, t.id typeid,
+               u.nickname, u.avatar
+        from t_blog b, t_type t, t_user u
+        where b.type_id = t.id and u.id = b.user_id and b.type_id = #{typeId}
+        order by b.update_time desc
+    </select>
+
+    <select id="getByTagId" resultMap="blog">
+        select b.id, b.title, b.first_picture, b.views, b.update_time, b.description,
+               t.name typename, t.id typeid,
+               tag.name tagname, tag.id tagid,
+               u.nickname, u.avatar
+        from t_blog b, t_type t, t_user u, t_blog_tags tb, t_tag tag
+        where b.type_id = t.id and u.id = b.user_id and tb.blog_id = b.id and tb.tag_id = tag.id and tag.id = #{tagId}
+        order by b.update_time desc
+    </select>
+
+
+    <delete id="deleteBlog">
+        delete from t_blog
+        where id=#{id}
+    </delete>
+
+<!--    获取推荐博客,前八条数据-->
+    <select id="getAllRecommendBlog" resultType="com.xiaobin.blog.pojo.Blog">
+        select id, title
+        from t_blog
+        where recommend=1
+        order by update_time desc limit 0,8;
+    </select>
+
+    <select id="searchIndexBlog" resultMap="blog">
+        select b.id, b.title, b.first_picture, b.views, b.update_time, b.description,
+               u.nickname, u.avatar
+        from t_blog b
+                 join t_user u
+                      on u.id=b.user_id
+        where b.title like '%${query}%' or b.content like '%${query}%' or b.description  like '%${query}%'
+    </select>
+
+    <insert id="saveBlogAndTag"  parameterType="com.xiaobin.blog.pojo.BlogTags" useGeneratedKeys="true" keyProperty="id">
+        insert  into t_blog_tags(tag_id,blog_id)
+        values (#{tagId},#{blogId})
+    </insert>
+
+    <update id="updateBlog" parameterType="com.xiaobin.blog.pojo.Blog">
+        update t_blog set title = #{title},content = #{content},first_picture = #{firstPicture} ,
+                          flag = #{flag} ,appreciation = #{appreciation},
+                          share_statement = #{shareStatement}, commentabled = #{commentabled} ,
+                          published = #{published},recommend = #{recommend} , update_time = #{updateTime},
+                          type_id = #{typeId}, description = #{description} , tag_ids = #{tagIds}
+                          where id = #{id};
+    </update>
+
+    <select id="findGroupYear" resultType="String">
+        select DATE_FORMAT(b.update_time, '%Y') from t_blog b order by b.update_time desc
+    </select>
+
+    <select id="findByYear" resultMap="blog">
+        select b.title, b.update_time, b.id, b.flag
+        from t_blog b
+        where DATE_FORMAT(b.update_time, "%Y") = #{year}
+    </select>
+
+</mapper>

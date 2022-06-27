@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaobin.blog.mapper.TalkMapper">
+
+  <!--两个id可能会相冲，取别名即可-->
+  <resultMap id="talk" type="com.xiaobin.blog.pojo.Talk">
+    <id property="id" column="id"/>
+    <result property="content" column="content"/>
+    <result property="updateTime" column="update_time"/>
+    <result property="userId" column="user_id"/>
+    <association property="user" javaType="com.xiaobin.blog.pojo.User">
+      <id property="id" column="uid"/>
+      <result property="nickname" column="nickname"/>
+      <result property="username" column="username"/>
+      <result property="email" column="email"/>
+      <result property="avatar" column="avatar"/>
+    </association>
+  </resultMap>
+
+  <select id="listAllTalk" resultMap="talk">
+    select talk.id,talk.content,talk.update_time,
+           user.nickname, user.avatar
+    from t_talk talk, t_user user
+    where talk.user_id = user.id
+    order by update_time desc
+  </select>
+
+  <select id="getTalk" resultMap="talk">
+    select talk.id,talk.content,talk.update_time,
+           user.nickname, user.avatar
+    from t_talk talk, t_user user
+    where talk.user_id = user.id and talk.id=#{id}
+  </select>
+
+<!--  通过内容查询-->
+  <select id="getTalkByContent" resultMap="talk">
+    select talk.id,talk.content,talk.update_time,
+           user.nickname, user.avatar
+    from t_talk talk, t_user user
+    where talk.user_id = user.id and talk.content=#{content}
+  </select>
+
+  <insert id="saveTalk" parameterType="com.xiaobin.blog.pojo.Talk">
+    insert into t_talk(content,update_time,user_id) values (#{content},#{updateTime},#{userId});
+  </insert>
+
+  <update id="updateTalk">
+    update t_talk set content = #{content},update_time = #{updateTime} where id = #{id};
+  </update>
+
+  <delete id="deleteTalk" >
+    delete from t_talk where id = #{id}
+  </delete>
+
+</mapper>
